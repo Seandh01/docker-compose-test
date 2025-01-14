@@ -1,5 +1,14 @@
 FROM node:18-alpine AS base
 
+# Install necessary dependencies for Puppeteer
+RUN apk add --no-cache \
+  chromium \
+  nss \
+  freetype \
+  harfbuzz \
+  ca-certificates \
+  ttf-freefont
+
 # Step 1. Rebuild the source code only when needed
 FROM base AS builder
 

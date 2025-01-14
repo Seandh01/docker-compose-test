@@ -1,4 +1,4 @@
-version: "3"
+version: "3.8"
 
 services:
   next-app:
@@ -10,18 +10,35 @@ services:
         NEXT_PUBLIC_ENV_VARIABLE: ${NEXT_PUBLIC_ENV_VARIABLE}
     restart: always
     ports:
-      - 3000
+      - 4000
     networks:
       - dokploy-network
     labels:
       - traefik.enable=true
-      - traefik.http.routers.next-app.rule=Host(`next-app.dokploy.com`)
+      - traefik.http.routers.next-app.rule=Host(`n8n.sdhconsultancy.nl`)
       - traefik.http.routers.next-app.entrypoints=websecure
       - traefik.http.routers.next-app.tls.certResolver=letsencrypt
-      - traefik.http.services.next-app.loadbalancer.server.port=3000
-  # Add more containers below (nginx, postgres, etc.)
-# Define a network, which allows containers to communicate
-# with each other, by using their container name as a hostname
+      - traefik.http.services.next-app.loadbalancer.server.port=4000
+
+  chromium:
+    image: browserless/chrome:latest # Lightweight Chromium image
+    restart: always
+    ports:
+      - "9222:3000" # Map WebSocket debugging port
+    networks:
+      - dokploy-network
+    environment:
+      # Set environment variables to configure the Chromium instance
+      MAX_CONCURRENT_SESSIONS: 5       # Maximum simultaneous sessions
+      PREBOOT_CHROME: "true"           # Start Chrome when the container starts
+      KEEP_ALIVE: "true"               # Keep the session alive
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.chromium.rule=Host(`chromium.sdhconsultancy.nl`)
+      - traefik.http.routers.chromium.entrypoints=websecure
+      - traefik.http.routers.chromium.tls.certResolver=letsencrypt
+      - traefik.http.services.chromium.loadbalancer.server.port=3000
+
 networks:
   dokploy-network:
     external: true
